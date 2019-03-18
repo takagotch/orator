@@ -240,7 +240,92 @@ pip install orator
 SELECT * FROM users WHERE name = 'John' OR (votes > 100 AND title != 'Admin')
 ```
 
-```
-```
+```py
+class Dream(Model):
+  """
+  """
+  @belongs_to
+  def you(self):
+    return Dreamer
+    
+from orator import Model, SoftDeletes
+
+class User(SoftDeletes, Model):
+  __fillable__ = ['name', 'email']
+  
+  @has_many
+  def posts(self):
+    return Post
+
+user = User.where('name', 'John').first()
+user.name = 'Simon'
+user.save()
 
 
+from orator import DatabaseManager
+
+config = {
+  'mysql': {
+    'driver': 'mysql',
+    'host': 'localhost',
+    'database': 'database',
+    'user': 'root',
+    'password': '',
+    'prefis': ''
+  }
+}
+
+db = DatabaseManager(config)
+
+
+results = db.select('select * from users where id = ?', [1])
+
+db.insert('insert into users (id, name) values (?, ?)', [1, 'John'])
+
+db.update('updat users set votes = 100 where name = ?', ['John'])
+db.delete('delete from users')
+db.statement('drop table users')
+
+with db.transaction():
+  db.table('users').update({votes: 1})
+  db.table('posts').delete()
+
+db.begin_transation()
+db.rollback()
+db.commit()
+
+users = db.connection('foo').table('users').get()
+db.connection().get_connection()
+db.reconnect('foo')
+db.disconnect('foo')
+
+config = {
+  'mysql': {
+    'driver': 'mysql',
+    'host': 'localhost',
+    'database': 'database',
+    'username': 'root',
+    'password': '',
+    'prefix': '',
+    'log_queries': True
+  }
+}
+
+db.connection().enable_query_log()
+
+SELECT COUNT(*) AS aggregate FROM "users" in 1.18ms
+INSERT INTO "users" ("email", "name", "updated_at") VALUES ('foo@bar.com')
+
+import logging
+logger = logggin.getLogger('orator.connection.queries')
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter(
+  'It took %(elapsed_time)sms to execute the query %(query)s'
+)
+
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+```
